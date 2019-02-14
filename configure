@@ -1,0 +1,33 @@
+#!/bin/bash
+if [ "$1" == "-static" ]; then
+ld_fl_st=" -static";
+else
+ld_fl_st="";
+fi;
+
+ld_fl_st="$ld_fl_st -pthread"
+
+echo "#ifndef ENV_H" > "src/env.h"
+echo "#define ENV_H" >> "src/env.h"
+command -v nvcc 2>/dev/null || {
+echo "#define NVCC_NOT_PRESENT" >> "src/env.h"; echo "#endif /* ENV_H */" >> "src/env.h"
+
+echo "CC              := g++" > "Makefile"
+echo "CFLAGS          := -std=c++11" >> "Makefile"
+echo "" >> "Makefile"
+echo "LD              := g++" >> "Makefile"
+echo "LDFLAGS         :=$ld_fl_st" >> "Makefile"
+cat "Makefile.in" >> "Makefile"
+
+exit 0
+}
+echo "#define NVCC_PRESENT" >> "src/env.h"
+echo "#endif /* ENV_H */" >> "src/env.h"
+
+echo "CC              := nvcc" > "Makefile"
+echo "CFLAGS          := -std=c++11" >> "Makefile"
+echo "" >> "Makefile"
+echo "LD              := g++" >> "Makefile"
+echo "LDFLAGS         := -lcudart$ld_fl_st" >> "Makefile"
+cat "Makefile.in" >> "Makefile"
+
